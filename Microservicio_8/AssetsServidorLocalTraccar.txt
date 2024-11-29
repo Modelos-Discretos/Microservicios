@@ -1,0 +1,98 @@
+Configuración Básica del Servidor
+Inicio el servicio de Traccar:
+
+
+sudo systemctl start traccar
+
+Verifico que esté corriendo:
+
+sudo systemctl status traccar
+
+Si todo está bien, debería ver un mensaje indicando que el servicio está activo.
+
+Personalización del Servidor Traccar
+
+Traccar guarda su configuración en un archivo llamado traccar.xml. Lo edito para personalizarlo:
+
+
+sudo nano /opt/traccar/conf/traccar.xml
+
+Personalizaciones Clave:
+Cambio de puerto predeterminado: Para mayor seguridad o para evitar conflictos, cambio el puerto predeterminado del servidor (por ejemplo, a 8082):
+
+<entry key='web.port'>8082</entry>
+
+Configuración de correos electrónicos: Para enviar notificaciones por correo electrónico, agrego mi servidor SMTP:
+
+<entry key='mail.smtp.host'>smtp.mi-servidor.com</entry>
+<entry key='mail.smtp.port'>587</entry>
+<entry key='mail.smtp.ssl'>false</entry>
+<entry key='mail.smtp.username'>mi-correo@mi-dominio.com</entry>
+<entry key='mail.smtp.password'>mi-contraseña</entry>
+<entry key='mail.smtp.from'>mi-correo@mi-dominio.com</entry>
+
+Cambio de idioma y zona horaria: Para que la interfaz esté en español y con mi zona horaria:
+
+<entry key='locale'>es</entry>
+<entry key='timezone'>America/Mexico_City</entry>
+
+Base de datos personalizada: Si quiero usar MySQL o PostgreSQL en lugar de la base de datos integrada, configuro las credenciales:
+
+
+<entry key='database.driver'>com.mysql.cj.jdbc.Driver</entry>
+<entry key='database.url'>jdbc:mysql://localhost:3306/traccar</entry>
+<entry key='database.user'>mi-usuario</entry>
+<entry key='database.password'>mi-contraseña</entry>
+
+Creo la base de datos previamente:
+
+
+mysql -u root -p
+CREATE DATABASE traccar;
+CREATE USER 'mi-usuario'@'localhost' IDENTIFIED BY 'mi-contraseña';
+GRANT ALL PRIVILEGES ON traccar.* TO 'mi-usuario'@'localhost';
+FLUSH PRIVILEGES;
+
+Habilitación de rastreadores específicos: Agrego protocolos de dispositivos que usaré en el servidor:
+
+
+<entry key='osmand.enable'>true</entry>
+<entry key='h02.enable'>true</entry>
+<entry key='gt06.enable'>true</entry>
+Guardo los cambios y salgo del editor.
+
+Configuración de Seguridad
+Configuro el firewall: Habilito el puerto que configuré para el servidor:
+
+sudo ufw allow 8082
+Certificado SSL con Let's Encrypt: Instalo certbot para asegurar mi conexión:
+
+sudo apt install certbot python3-certbot-nginx -y
+Configuro mi dominio con Nginx y habilito SSL:
+
+
+
+sudo certbot --nginx -d mi-dominio.com
+Supervisión y Mantenimiento
+Verifico los logs: Para solucionar problemas, reviso los registros de Traccar:
+
+sudo tail -f /opt/traccar/logs/tracker-server.log
+Actualización del servidor: Cuando haya una nueva versión, detengo el servicio, descargo el nuevo instalador y repito el proceso de instalación:
+
+
+sudo systemctl stop traccar
+wget nueva-version
+sudo ./traccar.run
+sudo systemctl start traccar
+Acceso al Servidor
+Una vez todo está configurado, accedo a la interfaz web desde mi navegador en la dirección:
+
+
+http://<mi-IP>:8082
+Uso las credenciales predeterminadas (usuario: admin, contraseña: admin), y luego cambio la contraseña por seguridad.
+
+Firmado por:
+
+Joel Andrade
+Christopher Armendáriz
+Joe Gavilanes
